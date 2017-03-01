@@ -5,9 +5,9 @@
 # Site
 title: Domacles
 subtitle:
-description:
+description: We can only see a short distance ahead, but we can see plenty there that needs to be done.
 author: Domacles
-language: zh-CN
+language: zh-Hans
 timezone: Asia/Shanghai
 
 # URL
@@ -34,7 +34,7 @@ titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true
 relative_link: false
 future: true
 highlight:
@@ -64,6 +64,7 @@ pagination_dir: page
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: next
+avatar: /images/avatar.png
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
@@ -71,3 +72,4 @@ deploy:
   type: git
   repo: https://github.com/Domacles/Domacles.github.io.git
   branch: master
+
