@@ -73,3 +73,5 @@ deploy:
   repo: https://github.com/Domacles/Domacles.github.io.git
   branch: master
 
+# Duoshuo
+duoshuo_shortname: http://doamcles0124.duoshuo.com
