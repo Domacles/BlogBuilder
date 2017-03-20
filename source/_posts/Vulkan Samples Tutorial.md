@@ -11,6 +11,8 @@ tags:
     - [Vulkan Instance](#vulkan-instance)
     - [vkCreateInstance](#vkcreateinstance)
     - [VkInstanceCreateInfo](#vkinstancecreateinfo)
+    - [VkApplicationInfo](#vkapplicationinfo)
+    - [Back to the Code](#back-to-the-code)
 - [Enumerate Devices](#enumerate-devices)
 - [Device](#device)
 - [Command Buffer](#command-buffer)
@@ -113,25 +115,45 @@ typedef struct VkInstanceCreateInfo {
     const char* const*          ppEnabledExtensionNames;
 } VkInstanceCreateInfo;
 ```
+该结构体的前两个属性，会在许多Vulkan `CreateInfo`中进行定义。
++ `sType`是一个枚举类型，表明当前`CreateInfo`是个什么类型的结构体，虽然看似与`VkInstanceCreateInfo`的命名作用重合，在`CreateInfo`结构体声明自己的类型有两个原因：
+    - 驱动程序(driver)，校验插件(validation layer)或者其他定义的结构可以方便地进行类型检验，如果不符合期望类型则会停止执行下面的操作。
+    - 该结构体可以被一个无类型指针(void *)传递到一个使用未定义类型指针的函数中，在该函数中进行类型转换后可以方便进行类型检验。比如，一个驱动程序支持一个扩展来创建vulkan实例，该驱动程序就会沿着`pNext`指向的`CreateInfo`链表查找指定类型的结构体，以满足插件的需要。
++ `pNext`是一个无类型指针，它有时候会被用于指向一些记录着特定信息的结构体，这些结构体是某些插件所需要的。该值可能会很少被用到。
++ `flags`这是一个标记变量(……不知是干什么的)。
++ `pApplicationInfo`变量存放的是`VkApplicationInfo`类型结构体的指针，该类型会在下面讲到。
++ `enabledLayerCount`加载的插件(layer)的数量，如果没有加载，则设置为0即可。
++ `ppEnabledLayerNames`加载的插件的名称的数组的指针，就是将插件列表的首地址设置到这个结构体中。
++ `enabledExtensionCount`使用的扩展(extension)的数量，如果没有使用，则设置为0即可。
++ `ppEnabledExtensionNames`同样，这里是将扩展的列表的首地址设置到这个结构体中。
 
+### VkApplicationInfo
 
+接下来我们看看用于提供Vulkan程序基本信息的`VkApplicationInfo`类型的定义：
+```
+typedef struct VkApplicationInfo {
+    VkStructureType    sType;
+    const void*        pNext;
+    const char*        pApplicationName;
+    uint32_t           applicationVersion;
+    const char*        pEngineName;
+    uint32_t           engineVersion;
+    uint32_t           apiVersion;
+} VkApplicationInfo;
+```
++ `sType`和`pNext`同上面的`VkInstanceCreateInfo`中的作用相同，记录该结构体的类型以及构成结构体链。
++ `pApplicationName`, `applicationVersion`, `pEngineName`, `engineVersion`这四个属性值是可以进行自由设置，有一些工具，加载器，插件和驱动程序(tools, loaders, layers, or drivers)会通过这几个变量提供一些Debug信息或者其他报告信息，程序运行时，驱动程序可以根据这些设置进行区别化地运行。
++ `apiVersion`设置Vulkan API的版本号，暂且设置为`VK_API_VERSION_1_0`就好。
 
+### Back to the Code
 
+在`/* VULKAN_KEY_START */`和`/* VULKAN_KEY_END */`之间的代码，做了下面几件事情：
++ 初始化`VkApplicationInfo`结构体`app_info`和`VkInstanceCreateInfo`结构体`inst_info`；
++ 使用`vkCreateInstance()`函数创建Vulkan Instance，即`inst`；
++ 对`VkResult`类型的返回值`res`变量进行检查，如果发现创建失败则终止程序；
++ 使用`vkDestroyInstance()`对`inst`进行释放。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+---
 
 ## Enumerate Devices
 
