@@ -14,6 +14,8 @@ tags:
     - [VkApplicationInfo](#vkapplicationinfo)
     - [Back to the Code](#back-to-the-code)
 - [Enumerate Devices](#enumerate-devices)
+    - [vkEnumeratePhysicalDevices](#vkenumeratephysicaldevices)
+    - [The Samples_info Structure](#the-samples_info-structure)
 - [Device](#device)
 - [Command Buffer](#command-buffer)
 - [Swapchain](#swapchain)
@@ -156,6 +158,46 @@ typedef struct VkApplicationInfo {
 ---
 
 ## Enumerate Devices
+
+本章节的代码在`02-enumerate_devices.cpp`中。
+
+ 在你创建Vulkan Instance之后，Loader就会知道有多少个物理显示设备可用，而你的应用程序则需要调用Vulkan API来获取设备列表。在获取设备可用数量之后，便可以进行区别化的逻辑运算。
+
+ ### Getting Lists of Objects from Vulkan
+
+ 获取对象列表在Vulkan操作中是非常常见的行为，Vulkan API对这种需求的策略也是一致的：返回值为**对象数量**和**对象列表指针首地址**。在使用获取对象列表的API
+ 时，我们需要按照下面的步骤进行：
+ + 调用获取对象列表的API，传入的参数为一个整数型变量的地址和NULL指针，前者用于第一次获取对象列表的对象数量，后者告诉API本次不获取对象列表。
+ + API会将对象列表的数量填到传入的整形变量地址所指向的整形变量上。
+ + 应用程序需要根据API给出的对象列表数量申请足够多的内存。
+ + 应用程序再次调用获取对象列表的API，传入的参数为一个整数型变量的地址，和上一步申请内存的地址，这一次API会将对象列表存储到传入的指针所指向的位置上。
+该方法是使用获取对象列表API的标准流程。
+
+### vkEnumeratePhysicalDevices
+
+`vkEnumeratePhysicalDevices`函数，就是用来获取显示设备列表的API，在`02-enumerate_devices.cpp`文件中，我们可以看到如下使用方法：
+```
+uint32_t gpu_count = 1;
+// Get the number of devices (GPUs) available.
+VkResult U_ASSERT_ONLY res = vkEnumeratePhysicalDevices(info.inst, &gpu_count, NULL);
+assert(gpu_count);
+// Allocate space and get the list of devices.
+info.gpus.resize(gpu_count);
+res = vkEnumeratePhysicalDevices(info.inst, &gpu_count, info.gpus.data());
+assert(!res && gpu_count >= 1);
+```
+在这里的使用方法，如上面步骤一样。
+> 注意：`info.gpus` 变量的声明为 `std::vector<VkPhysicalDevice> gpus`，是一个`VkPhysicalDevice`类型的vector数组。
+
+### The Samples_info Structure
+
+在文件`02-enumerate_devices.cpp`中，我们看到这样的：
+```
+struct sample_info info = {};
+init_global_layer_properties(info);
+init_instance(info, "vulkansamples_enumerate");
+```
+在这里，所有的样例源代码文件中，会声明`sample_info`来存储一些必须的类型，并通过调用`init_instance(info, "vulkansamples_enumerate")`来简化代码，方便查看。该函数实现了上一小节中初始化的代码。`sample_info`中的`inst`会被用来放到vkEnumeratePhysicalDevices()
 
 ## Device
 
