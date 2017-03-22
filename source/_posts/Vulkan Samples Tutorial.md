@@ -17,6 +17,7 @@ tags:
     - [vkEnumeratePhysicalDevices](#vkenumeratephysicaldevices)
     - [The Samples_info Structure](#the-samples_info-structure)
 - [Device](#device)
+    - [Device Queues and Queue Families](#device-queues-and-queue-families)
 - [Command Buffer](#command-buffer)
 - [Swapchain](#swapchain)
 - [Depth Buffer](#depth-buffer)
@@ -163,6 +164,9 @@ typedef struct VkApplicationInfo {
 
  在你创建Vulkan Instance之后，Loader就会知道有多少个物理显示设备可用，而你的应用程序则需要调用Vulkan API来获取设备列表。在获取设备可用数量之后，便可以进行区别化的逻辑运算。
 
+ Vulkan Instance依赖着vkPhysicalDevice(不明白这里的这个图想具体告诉我们什么)：
+![vkPhysicalDevice](Vulkan Samples Tutorial/PhysicalDevices.png)
+
  ### Getting Lists of Objects from Vulkan
 
  获取对象列表在Vulkan操作中是非常常见的行为，Vulkan API对这种需求的策略也是一致的：返回值为**对象数量**和**对象列表指针首地址**。在使用获取对象列表的API
@@ -200,6 +204,47 @@ init_instance(info, "vulkansamples_enumerate");
 在这里，所有的样例源代码文件中，会声明`sample_info`来存储一些必须的类型，并通过调用`init_instance(info, "vulkansamples_enumerate")`来简化代码，方便查看。该函数实现了上一小节中初始化的代码。`sample_info`中的`inst`会被用来放到`vkEnumeratePhysicalDevices()`使用。
 
 ## Device
+
+本章节的代码在` 03-init_device.cpp`中。
+
+继枚举可用物理设备之后，我们需要创建**虚拟设备对象**`VkDevice`(logical device object)来与物理设备相对应。虚拟设备对象是直接向硬件发送图形命令的关键对象。
+
+为了简化流程，本示例代码仅从获取到的设备列表中使用第一个设备来进行创建`VkDevice`。从上一章可以看到，代码中会声明一个`sample_info`类型的对象`info`，该对象会存储Vulkan中用到的一些对象，其中`info.gpus`存储的就是我们在上一章获取的物理设备对象列表，我们取用`info.gpus[0]`来创建并初始化`VkDevice`对象。
+
+为了实现创建初始化`VkDevice`或其他的虚拟设备对象，我们需要进行下面的步骤。
+
+### Device Queues and Queue Families
+
+与其他的图形API(这里难道是在黑DX，OpenGL??)相比，Vulkan会将设备对象开放给程序开发者，程序开发者可以获取这些队列并决定何时使用或者使用什么类型的队列。
+
+在这里，Vulkan命令队列是一个用于向硬件发送命令的抽象数据结构。在之后的代码中，我们可以看到如何使用Vulkan程序建立一个命令缓冲区并将缓冲区中的命令提交到另外一个被用于GPU硬件的异步操作队列中。
+
+Vulkan会根据队列(Device Queues)里存放的对象类型来安排队列在队列群(Queue Families)中的位置。当我们需要查询一个队列的类型和属性，我们需要从物理设备中查询 **QueueFamilyProperties**。
+![PhysicalDeviceQueueFamilyProperties](Vulkan Samples Tutorial/PhysicalDeviceQueueFamilyProperties.png)
+
+接下来我们看一看`VkQueueFamilyProperties`的类型定义：
+```
+typedef struct VkQueueFamilyProperties {
+    VkQueueFlags    queueFlags;
+    uint32_t        queueCount;
+    uint32_t        timestampValidBits;
+    VkExtent3D      minImageTransferGranularity;
+} VkQueueFamilyProperties;
+
+typedef enum VkQueueFlagBits {
+    VK_QUEUE_GRAPHICS_BIT = 0x00000001,
+    VK_QUEUE_COMPUTE_BIT = 0x00000002,
+    VK_QUEUE_TRANSFER_BIT = 0x00000004,
+    VK_QUEUE_SPARSE_BINDING_BIT = 0x00000008,
+} VkQueueFlagBits;
+```
+获取`VkQueueFamilyProperties`同上一章讲的获取对象列表的方法相同：
+```
+vkGetPhysicalDeviceQueueFamilyProperties(info.gpus[0], &info.queue_family_count, NULL);
+info.queue_props.resize(info.queue_family_count);
+vkGetPhysicalDeviceQueueFamilyProperties(info.gpus[0], &info.queue_family_count, info.queue_props.data());
+```
+
 
 ## Command Buffer
 
