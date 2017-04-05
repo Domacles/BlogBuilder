@@ -283,7 +283,7 @@ mathjax:
 #baidu_analytics:
 
 # Duoshuo ShortName
-duoshuo_shortname: iissnan-notes
+# duoshuo_shortname: iissnan-notes
 
 # Disqus
 #disqus_shortname:
@@ -292,7 +292,7 @@ duoshuo_shortname: iissnan-notes
 #hypercomments_id:
 
 # Gentie productKey
-#gentie_productKey:
+gentie_productKey: 9e0a6ca0f34d483b85b450ae0aacb19d
 
 # Support for youyan comments system.
 # You can get your uid from http://www.uyan.cc
