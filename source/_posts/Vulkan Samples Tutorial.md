@@ -18,7 +18,9 @@ tags:
     - [The Samples_info Structure](#the-samples_info-structure)
 - [Device](#device)
     - [Device Queues and Queue Families](#device-queues-and-queue-families)
+    - [Creating the Logical Device](#creating-the-logical-device)
 - [Command Buffer](#command-buffer)
+    - [Basic Command Buffer Operation](#basic-command-buffer-operation)
 - [Swapchain](#swapchain)
 - [Depth Buffer](#depth-buffer)
 - [Uniform Buffer](#uniform-buffer)
@@ -268,9 +270,36 @@ for (unsigned int i = 0; i < info.queue_family_count; i++) {
 }
 ```
 
+### Creating the Logical Device
 
+获取设备队列之后，创建虚拟设备(logical device)的代码如下：
+```
+VkDeviceCreateInfo device_info = {};
+device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+device_info.pNext = NULL;
+device_info.queueCreateInfoCount = 1;
+device_info.pQueueCreateInfos = &queue_info;
+device_info.enabledExtensionCount = 0;
+device_info.ppEnabledExtensionNames = NULL;
+device_info.enabledLayerCount = 0;
+device_info.ppEnabledLayerNames = NULL;
+device_info.pEnabledFeatures = NULL;
+
+VkDevice device;
+VkResult res = vkCreateDevice(info.gpus[0], &device_info, NULL, &device);
+assert(res == VK_SUCCESS);
+```
+上面代码提到的`enabledExtension`所指的扩展，在下面的内容很快会讲到；`enabledLayer`设置为0，在这里device layers在Vulkan中已被弃用，所以并不需要在创建设备时去指定devbice layers。在执行这段代码之后，我们将获得一个设备的对象，这之后我们可以通过创建命令缓冲区来向设备发送图形指令了。
+
+---
 
 ## Command Buffer
+
+### Basic Command Buffer Operation
+
+
+
+---
 
 ## Swapchain
 
