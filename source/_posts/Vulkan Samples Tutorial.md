@@ -21,6 +21,8 @@ tags:
     - [Creating the Logical Device](#creating-the-logical-device)
 - [Command Buffer](#command-buffer)
     - [Basic Command Buffer Operation](#basic-command-buffer-operation)
+    - [Creating the Command Buffer](#creating-the-command-buffer)
+    - [Using Command Buffers](#using-command-buffers)
 - [Swapchain](#swapchain)
 - [Depth Buffer](#depth-buffer)
 - [Uniform Buffer](#uniform-buffer)
@@ -207,7 +209,7 @@ init_instance(info, "vulkansamples_enumerate");
 
 ## Device
 
-本章节的代码在` 03-init_device.cpp`中。
+本章节的代码在`03-init_device.cpp`中。
 
 继枚举可用物理设备之后，我们需要创建**虚拟设备对象**`VkDevice`(logical device object)来与物理设备相对应。虚拟设备对象是直接向硬件发送图形命令的关键对象。
 
@@ -256,7 +258,6 @@ vkGetPhysicalDeviceQueueFamilyProperties(info.gpus[0], &info.queue_family_count,
 `VKQueueFlagBits`规定了硬件队列处理的工作流程顺序。比如，某个物理设备会为一般的3D图形操作定义`VK_QUEUE_GRAPHICS_BIT`队列，但同时该物理设备也支持 **pixel block copies** ，那它会再定义一个`VK_QUEUE_TRANSFER_BIT`队列，这就使图形设备能够进行**并行**图形操作成为了可能。
 
 某些时候，有一些简单的GPU会只返回一个有多重队列属性标记的队列，如图：
-Device1QueueFamilies.png
 ![Device1QueueFamilies](Vulkan Samples Tutorial/Device1QueueFamilies.png)
 此时，你需要对`FlagBits`进行位运算来找某一种队列：
 ```
@@ -295,9 +296,18 @@ assert(res == VK_SUCCESS);
 
 ## Command Buffer
 
+本章节代码在源文件`04-init_command_buffer.cpp`中。
+
 ### Basic Command Buffer Operation
 
+在Vulkan中，采取了一种与OpenGL不同的绘图指令API，是通过调用函数`vkCmdSetLineWidth()`向命令缓冲区(command buffer)中添加一条操作的。因为每个GPU都有属于自己的指令集(instruction set)，驱动程序就会做一些额外的生成特定GPU指令来设置线段宽度的工作：
+![CommandBufferInsert](Vulkan Samples Tutorial/CommandBufferInsert.png)
+在上图中，驱动程序制定一条合适的二进制GPU指令，用于向命令队列中插入一条操作：使GPU画一条宽度为5的线段。我们没有必要看到buffer中的内容，驱动程序会为我们将buffer的内容转换成GPU程序。
 
+
+### Creating the Command Buffer
+
+### Using Command Buffers
 
 ---
 
