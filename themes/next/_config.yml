@@ -292,7 +292,7 @@ mathjax:
 #hypercomments_id:
 
 # Gentie productKey
-gentie_productKey: 9e0a6ca0f34d483b85b450ae0aacb19d
+# gentie_productKey: 9e0a6ca0f34d483b85b450ae0aacb19d
 
 # Support for youyan comments system.
 # You can get your uid from http://www.uyan.cc
@@ -339,7 +339,7 @@ gentie_productKey: 9e0a6ca0f34d483b85b450ae0aacb19d
 # user_id must NOT be null when admin_enable is true!
 # you can visit http://dev.duoshuo.com get duoshuo user id.
 duoshuo_info:
-  ua_enable: true
+  ua_enable: false
   admin_enable: false
   user_id: 0
   #admin_nickname: Author
