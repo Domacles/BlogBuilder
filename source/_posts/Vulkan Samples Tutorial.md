@@ -244,6 +244,30 @@ vkGetPhysicalDeviceQueueFamilyProperties(info.gpus[0], &info.queue_family_count,
 info.queue_props.resize(info.queue_family_count);
 vkGetPhysicalDeviceQueueFamilyProperties(info.gpus[0], &info.queue_family_count, info.queue_props.data());
 ```
+`info.queue_props` 是一个`VkQueueFamilyProperties`的实例变量，上面的代码与之前的获取对象的模式相同，不在赘述。
+
+`VkQueueFamilyProperties` 结构体被称为"family"的原因是：在`queueFlags`的某种标志下，可能有好几个(`queueCount`)可以使用的队列。例如，`VK_QUEUE_GRAPHICS_BIT`集合中，有8个可以使用的队列。例图如下：
+![Device2QueueFamilies](Vulkan Samples Tutorial/Device2QueueFamilies.png)
+
+上图中，`VKPhysicalDevice`使用`vkGetPhysicalDeviceQueueFamilyProperties()`函数获得了两个`VkQueueFamilyProperties`实例，`queue_props[0]`集合类型是`VK_QUEUE_GRAPHICS_BIT`，`queueCount`值为8；`queue_props[1]`集合类型是`VK_QUEUE_TRANSFER_BIT`，`queueCount`值为1。
+
+`VKQueueFlagBits`规定了硬件队列处理的工作流程顺序。比如，某个物理设备会为一般的3D图形操作定义`VK_QUEUE_GRAPHICS_BIT`队列，但同时该物理设备也支持 **pixel block copies** ，那它会再定义一个`VK_QUEUE_TRANSFER_BIT`队列，这就使图形设备能够进行**并行**图形操作成为了可能。
+
+某些时候，有一些简单的GPU会只返回一个有多重队列属性标记的队列，如图：
+Device1QueueFamilies.png
+![Device1QueueFamilies](Vulkan Samples Tutorial/Device1QueueFamilies.png)
+此时，你需要对`FlagBits`进行位运算来找某一种队列：
+```
+bool found = false;
+for (unsigned int i = 0; i < info.queue_family_count; i++) {
+    if (info.queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        queue_info.queueFamilyIndex = i;
+        found = true;
+        break;
+    }
+}
+```
+
 
 
 ## Command Buffer
