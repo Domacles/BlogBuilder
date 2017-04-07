@@ -1,7 +1,7 @@
 ---
-title: Vulkan Samples Tutorial
+title: Vulkan Samples Tutorial (1)
 date: 2017-03-19 19:42:46
-tags:
+tags: Vulkan
 ---
 
 <!-- TOC -->
@@ -23,17 +23,6 @@ tags:
     - [Basic Command Buffer Operation](#basic-command-buffer-operation)
     - [Creating the Command Buffer](#creating-the-command-buffer)
     - [Using Command Buffers](#using-command-buffers)
-- [Swapchain](#swapchain)
-- [Depth Buffer](#depth-buffer)
-- [Uniform Buffer](#uniform-buffer)
-- [Pipeline Layout](#pipeline-layout)
-- [Descriptor Set](#descriptor-set)
-- [Render Pass](#render-pass)
-- [Shaders](#shaders)
-- [Framebuffers](#framebuffers)
-- [Vertex Buffer](#vertex-buffer)
-- [Pipeline](#pipeline)
-- [Draw Cube](#draw-cube)
 
 <!-- /TOC -->
 
@@ -43,7 +32,7 @@ tags:
 
 本文的最终目标是初步理解Vulkan API的使用并创建出显示一个立方体的程序，效果如下：
 
-![Sample](Vulkans Samples Tutorial/sample.png)
+![Sample](Vulkans Samples Tutorial(1)/sample.png)
 
 ---
 
@@ -80,7 +69,7 @@ destroy_instance(info);
 Vulkan API使用`vkInstance`来存储程序的预先设置的状态(`per-application state`)，所有的应用程序在使用Vulkan API进行操作之前都必须需要创建**Vulkan Instance**。
 
 Vulkan程序的基础结构如下：
-![Vulkan Instances](Vulkan Samples Tutorial/Vulkan Instances.png)
+![Vulkan Instances](Vulkan Samples Tutorial(1)/Vulkan Instances.png)
 
 上图告诉我们：Vulkan程序会被连接到一个Vulkan库上，这个库被称为**Loader**。应用程序需要通过创建Vulkan Instance来对loader进行初始化。loader之后会对更底层的显卡驱动进行加载和初始化。
 
@@ -169,7 +158,7 @@ typedef struct VkApplicationInfo {
  在你创建Vulkan Instance之后，Loader就会知道有多少个物理显示设备可用，而你的应用程序则需要调用Vulkan API来获取设备列表。在获取设备可用数量之后，便可以进行区别化的逻辑运算。
 
  Vulkan Instance依赖着vkPhysicalDevice(不明白这里的这个图想具体告诉我们什么)：
-![vkPhysicalDevice](Vulkan Samples Tutorial/PhysicalDevices.png)
+![vkPhysicalDevice](Vulkan Samples Tutorial(1)/PhysicalDevices.png)
 
  ### Getting Lists of Objects from Vulkan
 
@@ -224,7 +213,7 @@ init_instance(info, "vulkansamples_enumerate");
 在这里，Vulkan命令队列是一个用于向硬件发送命令的抽象数据结构。在之后的代码中，我们可以看到如何使用Vulkan程序建立一个命令缓冲区并将缓冲区中的命令提交到另外一个被用于GPU硬件的异步操作队列中。
 
 Vulkan会根据队列(Device Queues)里存放的对象类型来安排队列在队列群(Queue Families)中的位置。当我们需要查询一个队列的类型和属性，我们需要从物理设备中查询 **QueueFamilyProperties**。
-![PhysicalDeviceQueueFamilyProperties](Vulkan Samples Tutorial/PhysicalDeviceQueueFamilyProperties.png)
+![PhysicalDeviceQueueFamilyProperties](Vulkan Samples Tutorial(1)/PhysicalDeviceQueueFamilyProperties.png)
 
 接下来我们看一看`VkQueueFamilyProperties`的类型定义：
 ```
@@ -251,14 +240,14 @@ vkGetPhysicalDeviceQueueFamilyProperties(info.gpus[0], &info.queue_family_count,
 `info.queue_props` 是一个`VkQueueFamilyProperties`的实例变量，上面的代码与之前的获取对象的模式相同，不在赘述。
 
 `VkQueueFamilyProperties` 结构体被称为"family"的原因是：在`queueFlags`的某种标志下，可能有好几个(`queueCount`)可以使用的队列。例如，`VK_QUEUE_GRAPHICS_BIT`集合中，有8个可以使用的队列。例图如下：
-![Device2QueueFamilies](Vulkan Samples Tutorial/Device2QueueFamilies.png)
+![Device2QueueFamilies](Vulkan Samples Tutorial(1)/Device2QueueFamilies.png)
 
 上图中，`VKPhysicalDevice`使用`vkGetPhysicalDeviceQueueFamilyProperties()`函数获得了两个`VkQueueFamilyProperties`实例，`queue_props[0]`集合类型是`VK_QUEUE_GRAPHICS_BIT`，`queueCount`值为8；`queue_props[1]`集合类型是`VK_QUEUE_TRANSFER_BIT`，`queueCount`值为1。
 
 `VKQueueFlagBits`规定了硬件队列处理的工作流程顺序。比如，某个物理设备会为一般的3D图形操作定义`VK_QUEUE_GRAPHICS_BIT`队列，但同时该物理设备也支持 **pixel block copies** ，那它会再定义一个`VK_QUEUE_TRANSFER_BIT`队列，这就使图形设备能够进行**并行**图形操作成为了可能。
 
 某些时候，有一些简单的GPU会只返回一个有多重队列属性标记的队列，如图：
-![Device1QueueFamilies](Vulkan Samples Tutorial/Device1QueueFamilies.png)
+![Device1QueueFamilies](Vulkan Samples Tutorial(1)/Device1QueueFamilies.png)
 此时，你需要对`FlagBits`进行位运算来找某一种队列：
 ```
 bool found = false;
@@ -301,8 +290,17 @@ assert(res == VK_SUCCESS);
 ### Basic Command Buffer Operation
 
 在Vulkan中，采取了一种与OpenGL不同的绘图指令API，是通过调用函数`vkCmdSetLineWidth()`向命令缓冲区(command buffer)中添加一条操作的。因为每个GPU都有属于自己的指令集(instruction set)，驱动程序就会做一些额外的生成特定GPU指令来设置线段宽度的工作：
-![CommandBufferInsert](Vulkan Samples Tutorial/CommandBufferInsert.png)
+![CommandBufferInsert](Vulkan Samples Tutorial(1)/CommandBufferInsert.png)
 在上图中，驱动程序制定一条合适的二进制GPU指令，用于向命令队列中插入一条操作：使GPU画一条宽度为5的线段。我们没有必要看到buffer中的内容，驱动程序会为我们将buffer的内容转换成GPU程序。
+
+接下来我们需要学习的是如何去获取一个命令缓冲区。这里需要了解Vulkan的**Command Buffer Pools**类型，从`04-init_command_buffer.cpp`的代码中可以了解是如何获取一个命令缓冲区的。
+
+Command Buffer Pools
+
+众所周知，创建和销毁单个命令缓冲区的开销是昂贵的，因此Vulkan用命令缓冲池(Command Buffer Pools)来管理命令缓冲区，使用命令缓冲池有下面几点考虑：
+1. 有一些程序会使用生命周期短的命令缓冲区，这就意味着这些缓冲区会被频繁地创建和销毁。使用专门的缓冲池来管理并分配这些命令缓冲区会提高程序效率。
+2. 命令缓冲区内存的特殊点在于：它必须对CPU和GPU都是可见的。在众多操作系统中，实现一处从内存到处理器的映射需要占用很长的一段时间片(锁，同步，传输等时间占用)，当采用小的缓冲区来装同样多的命令，则会产生许多个映射，会在传输之外的步骤上浪费大量时间。
+3. 内存映射是一个代价高昂的操作，它通常涉及内存页表的修改以及对TLB内存缓冲状态的设置。因此，使用内存映射的最好的方法是将一个大块的缓冲池当作映射区，只做一次映射，然后在这块缓冲池中进行小的缓冲区的分配，而不是将每个缓冲区单独映射到处理器。
 
 
 ### Creating the Command Buffer
@@ -311,72 +309,5 @@ assert(res == VK_SUCCESS);
 
 ---
 
-## Swapchain
-
-## Depth Buffer
-
-## Uniform Buffer
-
-## Pipeline Layout
-
-## Descriptor Set
-
-## Render Pass
-
-## Shaders
-
-## Framebuffers
-
-## Vertex Buffer
-
-## Pipeline
-
-## Draw Cube
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 本篇**Vulkan Samples Tutorial**原文是**LUNAEXCHANGE**中的[Vulkan Tutorial](https://vulkan.lunarg.com/doc/sdk/1.0.42.1/windows/tutorial/html/index.html)的译文。
 并非逐字逐句翻译，如有错误之处请告知。O(∩_∩)O谢谢~~
-
-
