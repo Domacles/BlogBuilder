@@ -1,5 +1,5 @@
 ---
-title: Vulkan Samples Tutorial (2)
+title: Vulkan Samples Tutorial(2)
 date: 2017-04-07 10:18:23
 tags: Vulkan
 ---
