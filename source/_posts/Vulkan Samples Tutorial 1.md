@@ -304,13 +304,38 @@ Command Buffer Pools
 
 Command Buffer Pools and Queue Families
 
-驱动软件会采用最适合GPU硬件读取命令队列的内存分配特性。比如：要求内存严格对齐、使用缓存(cache behavior)。如果有多个硬件GPU队列，驱动会按照物理设备队列族(physical device queue families)中对GPU队列的描述，专门为每个GPU硬件队列分配有对应特性的命令缓冲池。这里面的细节会由驱动程序在得到队列组时进行处理完成的。
+驱动软件会采用最适合GPU硬件读取命令队列的内存分配特性。比如：要求内存严格对齐、使用缓存(cache behavior)。如果有多个硬件GPU队列，驱动会按照物理设备队列族(physical device queue families)中对GPU队列的描述，专门为每个GPU硬件队列分配有对应特性的命令缓冲池。这里面的细节会由驱动程序在得到队列组时进行处理完成的。如此，一个命令缓冲池只对应一个队列族，当我们通过API创建缓冲池时，需要制定队列族的index:
+```
+VkCommandPoolCreateInfo cmd_pool_info = {};
+cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+cmd_pool_info.pNext = NULL;
+cmd_pool_info.queueFamilyIndex = info.graphics_queue_family_index;
+cmd_pool_info.flags = 0;
 
-
+res = vkCreateCommandPool(info.device, &cmd_pool_info, NULL, &info.cmd_pool);
+```
+> 注意：当你创建逻辑设备时，就应当确定使用哪些硬件队列。实际上，你应当为每一个将要被应用程序使用的单独的队列组创建一个命令缓冲池。由于我们的样例中只为逻辑设备创建了一个队列族，创建一个命令缓冲池足矣。
 
 ### Creating the Command Buffer
 
+创建一个命令缓冲池之后，从缓冲池中取出一个缓冲区就容易多了：
+```
+VkCommandBufferAllocateInfo cmd = {};
+cmd.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+cmd.pNext = NULL;
+cmd.commandPool = info.cmd_pool;
+cmd.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+cmd.commandBufferCount = 1;
+
+res = vkAllocateCommandBuffers(info.device, &cmd, &info.cmd);
+```
+> 注意：分配缓冲区的API实际上可以一次调用分配更多的命令缓冲区，但本样例是一个简单的演示，因此只分配了一个命令缓冲区。
+
 ### Using Command Buffers
+
+创建命令缓冲区后，我们调用 `vkBeginCommandBuffer()` 函数来开始向缓冲区中写入命令，调用该函数之后，可以使用 `vkCmd*` 函数向缓冲区写入命令。比如，在本章节开始时使用到的 `vkCmdSetLineWidth()` 函数。再比如，`vkCmdDraw()` 函数告诉GPU开始画出顶点。当我们需要结束命令的写入，我们需要调用 `vkEndCommandBuffer()` 来表明结束缓冲区写入命令的过程。在随后的章节中，我们看到的代码实际上都是已经在创建缓冲区之后的代码。
+
+调用结束函数并不会让GPU去执行缓冲区中的命令。如果需要GPU去执行缓冲区的命令，我们需要使用 `vkQueueSubmit()` 函数向GPU的硬件队列提交缓冲区命令。不过在调用提交函数之前，还需要进行一些列设置，这将在下面的章节中进行讲解。
 
 ---
 
