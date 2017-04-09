@@ -10,6 +10,10 @@ tags: Vulkan
     - [Vulkan and the Windowing System](#vulkan-and-the-windowing-system)
     - [Revisiting Instance and Device Extensions](#revisiting-instance-and-device-extensions)
     - [Queue Family and Present](#queue-family-and-present)
+    - [Swapchain Create Info](#swapchain-create-info)
+    - [Different Queue Families for Graphics and Present](#different-queue-families-for-graphics-and-present)
+    - [Create Swapchain](#create-swapchain)
+    - [Create Image Views](#create-image-views)
 - [Depth Buffer](#depth-buffer)
 - [Uniform Buffer](#uniform-buffer)
 
@@ -82,8 +86,7 @@ Instance & Device Extensions recap：
 
 ### Queue Family and Present
 
-**Present** 操作，就是使一个Swapchain图像缓冲放到物理显示设备上的操作。当我们的应用程序需要显示图像，那就需要向GPU设备队列发送一个**呈现**(Present)请求，具体方法是调用`vkQueuePresentKHR()`实现的。
-
+**Present** 操作，就是使一个Swapchain图像缓冲放到物理显示设备上的操作。当我们的应用程序需要显示图像，那就需要向某一个GPU设备队列发送一个**呈现**(Present)请求（具体方法是调用`vkQueuePresentKHR()`实现的）但接受请求的GPU队列需要能够支持present请求，或者支持graphics和present请求。下面的代码就展示了如何找到一个支持graphics和present操作的GPU队列：
 ```
 // Iterate over each queue to learn whether it supports presenting:
 VkBool32 *pSupportsPresent =
@@ -121,8 +124,15 @@ if (info.present_queue_family_index == UINT32_MAX) {
 }
 free(pSupportsPresent);
 ```
+上面这份代码，再次使用在这之前便已获取的变量`info.queue_family_count`，通过调用`vkGetPhysicalDeviceSurfaceSupportKHR()`函数来获取每一个queue family的是否支持surface的标志。然后遍历所有的queue family，来寻找同时支持present和graphics的GPU队列族。最后，如果发现没有找到同时支持present和graphics的GPU队列族，则去寻找一个支持present的GPU队列族，将present和graphics功能分到两个GPU queue family上。接下来的代码，会从`graphics_queue_family_index`获取执行图形命令的队列编号，从`present_queue_family_index`获取执行呈现操作的队列编号。
 
+### Swapchain Create Info
 
+### Different Queue Families for Graphics and Present
+
+### Create Swapchain
+
+### Create Image Views
 
 ---
 
