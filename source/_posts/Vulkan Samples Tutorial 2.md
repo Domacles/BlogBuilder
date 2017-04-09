@@ -123,10 +123,63 @@ if (info.present_queue_family_index == UINT32_MAX) {
         }
 }
 free(pSupportsPresent);
+
+// Generate error if could not find queues that support graphics
+    // and present
+    if (info.graphics_queue_family_index == UINT32_MAX ||
+        info.present_queue_family_index == UINT32_MAX) {
+        std::cout << "Could not find a queues for graphics and "
+                     "present\n";
+        exit(-1);
+    }
 ```
 上面这份代码，再次使用在这之前便已获取的变量`info.queue_family_count`，通过调用`vkGetPhysicalDeviceSurfaceSupportKHR()`函数来获取每一个queue family的是否支持surface的标志。然后遍历所有的queue family，来寻找同时支持present和graphics的GPU队列族。最后，如果发现没有找到同时支持present和graphics的GPU队列族，则去寻找一个支持present的GPU队列族，将present和graphics功能分到两个GPU queue family上。接下来的代码，会从`graphics_queue_family_index`获取执行图形命令的队列编号，从`present_queue_family_index`获取执行呈现操作的队列编号。
 
+`free()`上面的if语句实际上有些多余，但这里如此写是为了针对没有都支持graphics和present的GPU队列的情况做说明的。
+
+最后，如果发现graphics或者present功能找不齐，该代码会结束运行。
+
 ### Swapchain Create Info
+
+接下来更多的内容是设置Swapchain的Create Info结构体：
+```
+typedef struct VkSwapchainCreateInfoKHR {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkSwapchainCreateFlagsKHR        flags;
+    VkSurfaceKHR                     surface;
+    uint32_t                         minImageCount;
+    VkFormat                         imageFormat;
+    VkColorSpaceKHR                  imageColorSpace;
+    VkExtent2D                       imageExtent;
+    uint32_t                         imageArrayLayers;
+    VkImageUsageFlags                imageUsage;
+    VkSharingMode                    imageSharingMode;
+    uint32_t                         queueFamilyIndexCount;
+    const uint32_t*                  pQueueFamilyIndices;
+    VkSurfaceTransformFlagBitsKHR    preTransform;
+    VkCompositeAlphaFlagBitsKHR      compositeAlpha;
+    VkPresentModeKHR                 presentMode;
+    VkBool32                         clipped;
+    VkSwapchainKHR                   oldSwapchain;
+} VkSwapchainCreateInfoKHR;
+```
+下面的几段文章，讲述了创建设置Swapchain前后的全部过程。
+
+Creating a Surface
+
+要在instance和device中使用WSI扩展，首先需要创建一个`VkSurface`对象，然后才能用它来进行Swapchain的创建。在`05-init_swapchain.cpp`文件的`main`函数开始的地方，我们可以看到针对本地平台的Surface的创建过程：
+```
+#ifdef _WIN32
+    VkWin32SurfaceCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    createInfo.pNext = NULL;
+    createInfo.hinstance = info.connection;
+    createInfo.hwnd = info.window;
+    res = vkCreateWin32SurfaceKHR(info.inst, &createInfo, NULL, &info.surface);
+#endif
+```
+
 
 ### Different Queue Families for Graphics and Present
 
