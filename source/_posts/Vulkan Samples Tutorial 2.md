@@ -179,6 +179,22 @@ Creating a Surface
     res = vkCreateWin32SurfaceKHR(info.inst, &createInfo, NULL, &info.surface);
 #endif
 ```
+本段代码中的`info.connection`和`info.window`分别在`init_connection()`和`init_window()`函数中针对本地平台进行了创建和初始化。在Vulkan中，通过`vkCreateWin32SurfaceKHR()`函数创建的VkSurfaceKHR Surface对象表示一个用于处理平台窗口的对象。
+
+> 注意：`init_connection()`和`init_window()`是平台相关的，这两个函数为我们连接显示设备创建窗口程序屏蔽了很多细节。
+
+接下来我们需要将创建的`info.surface`对象设置到Swapchain Create Info结构体中：
+```
+VkSwapchainCreateInfoKHR swapchain_ci = {};
+swapchain_ci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+swapchain_ci.pNext = NULL;
+swapchain_ci.surface = info.surface;
+```
+
+Device Surface Formats
+
+当你创建Swapchain时，你需要指定surface的格式(Formats)。**Format** 在这里表示`VkFormat`枚举器中描述的像素格式，比如：`VK_FORMAT_B8G8R8A8_UNORM`格式就是一种Device SUrface Format。
+
 
 
 ### Different Queue Families for Graphics and Present
