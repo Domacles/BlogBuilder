@@ -9,6 +9,7 @@ tags: Vulkan
 - [Swapchain](#swapchain)
     - [Vulkan and the Windowing System](#vulkan-and-the-windowing-system)
     - [Revisiting Instance and Device Extensions](#revisiting-instance-and-device-extensions)
+    - [Queue Family and Present](#queue-family-and-present)
 - [Depth Buffer](#depth-buffer)
 - [Uniform Buffer](#uniform-buffer)
 
@@ -33,8 +34,8 @@ WSI扩展包含了对多种平台的支持。使用WSI扩展是通过定义下�
 + VK_USE_PLATFORM_MIR_KHR - Mir
 + VK_USE_PLATFORM_WAYLAND_KHR - Wayland
 + VK_USE_PLATFORM_WIN32_KHR - Microsoft Windows
-+ VK_USE_PLATFORM_XCB_KHR - X Window System, using the XCB library
-+ VK_USE_PLATFORM_XLIB_KHR - X Window System, using the Xlib library
++ VK_USE_PLATFORM_XCB_KHR - X Window System, using the XCB library (Apples)
++ VK_USE_PLATFORM_XLIB_KHR - X Window System, using the Xlib library (Apples)
 **KHR** 命名后缀表示扩展是按照 **Khronos** 组织的规范实现的。
 
 Surface Abstraction
@@ -42,6 +43,84 @@ Surface Abstraction
 Vulkan 使用 `VkSurfaceKHR` 对象来作为本地平台显示层或者窗口的抽象化对象。该对象是在**VK_KHR_surface**扩展中定义的。WSI扩展的作用是创建，操纵或者销毁显示层对象(surface objects)。
 
 ### Revisiting Instance and Device Extensions
+
+在前面的几个章节中，我们推迟了扩展的设置，现在需要我们回顾之前 Instance 和 Device 的扩展设置，从而能够让我们学会如何启动WSI扩展。
+
+Instance Extensions
+
+使用WSI扩展的首要步骤是，启动表示层扩展(surface extension)。查看本章样例中使用的`init_instance_extension_names()`函数的实现代码，我们发现样例是将`VK_KHR_SURFACE_EXTENSION_NAME`添加到Instance扩展列表：
+```
+void init_instance_extension_names(struct sample_info &info) {
+    info.instance_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+#ifdef __ANDROID__
+    info.instance_extension_names.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#elif defined(_WIN32)
+    info.instance_extension_names.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#else
+    info.instance_extension_names.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#endif
+}
+```
+该函数不仅添加了通用Surface扩展，还针对其他平台添加对应的扩展。比如，针对Win32平台会将`VK_KHR_WIN32_SURFACE_EXTENSION_NAME`添加到Instance扩展列表中。
+
+这些扩展将会在Instance创建时加载，加载的实现代码可以在`init_instance()`中进行查看。
+> 注意：在`init_instance()`中我们看到`instance_extension_names`列表是通过传指针数组将内容的地址设置到`ppEnabledExtensionNames`上的。
+
+Device Extensions
+
+Swapchain 是一个图像缓存的列表，GPU向其中输入图像，该列表的图像会被呈现到显示输出设备。每当GPU向其中写入图像数据，device-level 扩展就会开始处理 Swapchain。所以，在进行 device 初始化之前需要指定device扩展，在`init_device_extension_names()`函数中，我们看到使用的device扩展是`VK_KHR_SWAPCHAIN_EXTENSION_NAME`:
+```
+void init_device_extension_names(struct sample_info &info) {
+    info.device_extension_names.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+}
+```
+这些扩展将在创建Device时进行加载，加载的实现代码可以在`init_device()`中进行查看，与`init_instance()`类似。
+
+Instance & Device Extensions recap：
++ 本节样例使用 `init_instance_extension_names()` 函数来加载常用的surface扩展，并将平台相关的对应扩展也加到了instance扩展列表中了。
++ 本节样例使用 `init_device_extension_names()` 函数来加载一个Swapchain设备扩展。
+
+### Queue Family and Present
+
+**Present** 操作，就是使一个Swapchain图像缓冲放到物理显示设备上的操作。当我们的应用程序需要显示图像，那就需要向GPU设备队列发送一个**呈现**(Present)请求，具体方法是调用`vkQueuePresentKHR()`实现的。
+
+```
+// Iterate over each queue to learn whether it supports presenting:
+VkBool32 *pSupportsPresent =
+    (VkBool32 *)malloc(info.queue_family_count * sizeof(VkBool32));
+for (uint32_t i = 0; i < info.queue_family_count; i++) {
+    vkGetPhysicalDeviceSurfaceSupportKHR(info.gpus[0], i, info.surface,
+                                         &pSupportsPresent[i]);
+}
+
+// Search for a graphics and a present queue in the array of queue
+// families, try to find one that supports both
+info.graphics_queue_family_index = UINT32_MAX;
+info.present_queue_family_index = UINT32_MAX;
+for (uint32_t i = 0; i < info.queue_family_count; ++i) {
+    if ((info.queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+        if (info.graphics_queue_family_index == UINT32_MAX)
+            info.graphics_queue_family_index = i;
+
+        if (pSupportsPresent[i] == VK_TRUE) {
+            info.graphics_queue_family_index = i;
+            info.present_queue_family_index = i;
+            break;
+        }
+    }
+}
+
+if (info.present_queue_family_index == UINT32_MAX) {
+    // If didn't find a queue that supports both graphics and present, then
+    // find a separate present queue.
+    for (size_t i = 0; i < info.queue_family_count; ++i)
+        if (pSupportsPresent[i] == VK_TRUE) {
+            info.present_queue_family_index = i;
+            break;
+        }
+}
+free(pSupportsPresent);
+```
 
 
 
