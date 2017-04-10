@@ -237,19 +237,35 @@ if (info.graphics_queue_family_index != info.present_queue_family_index) {
     swapchain_ci.pQueueFamilyIndices = queueFamilyIndices;
 }
 ```
+上面的代码是创建Swapchain常用的做法。本章节其余代码是设置Swapchain Create Info结构体的其他属性，可以参考用于将来自己的程序实现。
 
 
 ### Create Swapchain
 
+在Swapchain Create Info结构体设置完成后，我们使用下面这一句代码创建Swapchain：
 ```
 res = vkCreateSwapchainKHR(info.device, &swapchain_ci, NULL, &info.swap_chain);
 ```
+`vkCreateSwapchainKHR()`函数创建了许多图像缓冲区用于建立Swapchain。
 
+在程序进行时，我们可能需要获取每个Swapchain上的图像缓冲区，我们应该用下面这段符合之前获取格式的代码：
 ```
-vkGetSwapchainImagesKHR(info.device, info.swap_chain, &info.swapchainImageCount, NULL);
+res = vkGetSwapchainImagesKHR(info.device, info.swap_chain,
+                                  &info.swapchainImageCount, NULL);
+    assert(res == VK_SUCCESS);
+
+    VkImage *swapchainImages =
+        (VkImage *)malloc(info.swapchainImageCount * sizeof(VkImage));
+    assert(swapchainImages);
+    res = vkGetSwapchainImagesKHR(info.device, info.swap_chain,
+                                  &info.swapchainImageCount, swapchainImages);
+    assert(res == VK_SUCCESS);
 ```
+来获取Swapchain Images的列表，然后向其中输入数据，在之后通知GPU渲染他们。
 
 ### Create Image Views
+
+
 
 ---
 
