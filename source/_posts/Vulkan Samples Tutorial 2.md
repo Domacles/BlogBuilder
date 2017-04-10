@@ -265,7 +265,9 @@ res = vkGetSwapchainImagesKHR(info.device, info.swap_chain,
 
 ### Create Image Views
 
+`VkImageView`中存储着图像数据的信息，如：图像内存的排列格式，用于1D，2D还是3D，也用于记录图像的格式，颜色组成的顺序以及插件的信息。在本章节代码中，我们可以看到最后的`for`循环中使用`vkCreateImageView`创建了针对于每个Swapchain的image缓冲区的view缓冲区，存于info中。
 
+在创建完image view之后，算是完成了创建Swapchain的过程，在后面的章节中我们将使用info中的iamge view。
 
 ---
 
