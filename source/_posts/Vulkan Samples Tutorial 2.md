@@ -195,11 +195,59 @@ Device Surface Formats
 
 当你创建Swapchain时，你需要指定surface的格式(Formats)。**Format** 在这里表示`VkFormat`枚举器中描述的像素格式，比如：`VK_FORMAT_B8G8R8A8_UNORM`格式就是一种Device SUrface Format。
 
+本章节接下来的一段代码就是获取一个`VkSurfaceFormatKHR`结构体列表，该列表保存着显示设备支持的`VkFormat`格式以及其他信息。本样例代码不关心用什么格式，于是便采用了第一个可用格式作为将要使用的格式。
+
+然后，我们在本章节代码的后面部分可以看到`VkFormat`被设置到Swapchain create info结构体中：
+```
+swapchain_ci.imageFormat = info.format;
+```
+
+Surface Capabilities
+
+获取到Formats之后，我们需要获取到Surface Capabilities和Present Modes来填充Swapchain的create info结构体，在本章节代码中，我们看到调用了`vkGetPhysicalDeviceSurfaceCapabilitiesKHR()`和 `vkGetPhysicalDeviceSurfacePresentModesKHR()`两个函数分别获取Surface Capabilities和Present Modes，之后的部分我们可以看到这两个对象中的信息被设置到了Swapchain create info结构体中：
+```
+uint32_t desiredNumberOfSwapChainImages = surfCapabilities.minImageCount;
+
+swapchain_ci.minImageCount = desiredNumberOfSwapChainImages;
+swapchain_ci.imageExtent.width = swapChainExtent.width;
+swapchain_ci.imageExtent.height = swapChainExtent.height;
+swapchain_ci.preTransform = preTransform;
+swapchain_ci.presentMode = swapchainPresentMode;
+```
+`minImageCount`属性，用于设置缓冲区使用策略：双缓冲区、三缓冲区等。本章节代码中是从使用`vkGetPhysicalDeviceSurfaceCapabilitiesKHR()`函数获取到到的`surfCapabilities`对象中查到Device支持的图像缓冲区的最小个数。
 
 
 ### Different Queue Families for Graphics and Present
 
+在本章之前的代码中，我们找到了有graphics和present功能的GPU队列，如果他们并不是同一个队列，我们需要做一些其他设置，让它们能够共享图像缓冲：
+```
+swapchain_ci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+swapchain_ci.queueFamilyIndexCount = 0;
+swapchain_ci.pQueueFamilyIndices = NULL;
+uint32_t queueFamilyIndices[2] = {
+    (uint32_t)info.graphics_queue_family_index,
+    (uint32_t)info.present_queue_family_index};
+if (info.graphics_queue_family_index != info.present_queue_family_index) {
+    // If the graphics and present queues are from different queue families,
+    // we either have to explicitly transfer ownership of images between the
+    // queues, or we have to create the swapchain with imageSharingMode
+    // as VK_SHARING_MODE_CONCURRENT
+    swapchain_ci.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    swapchain_ci.queueFamilyIndexCount = 2;
+    swapchain_ci.pQueueFamilyIndices = queueFamilyIndices;
+}
+```
+
+
 ### Create Swapchain
+
+```
+res = vkCreateSwapchainKHR(info.device, &swapchain_ci, NULL, &info.swap_chain);
+```
+
+```
+vkGetSwapchainImagesKHR(info.device, info.swap_chain, &info.swapchainImageCount, NULL);
+```
 
 ### Create Image Views
 
