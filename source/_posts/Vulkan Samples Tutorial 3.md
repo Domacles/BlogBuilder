@@ -39,7 +39,7 @@ Depth Buffer和Uniform Buffer在OpenGL也有对应的概念，可以参考OpenGL
 4. 创建使用深度缓冲区的Image View
 
 以上步骤可以使用下图表示：
-[DepthBufferBindView](Vulkan Samples Tutorial 3/DepthBufferBindView.png)
+![DepthBufferBindView](Vulkan Samples Tutorial 3/DepthBufferBindView.png)
 
 ### Create the Depth Buffer Image Object
 
