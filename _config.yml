@@ -74,4 +74,4 @@ deploy:
   branch: master
 
 # Duoshuo
-duoshuo_shortname: http://doamcles0124.duoshuo.com
+duoshuo_shortname:
