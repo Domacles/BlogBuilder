@@ -118,7 +118,7 @@ attachments[1].flags = 0;
 
 渲染子层，即发生在初始化布局和最终布局期间，会将颜色附件转换成`VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`状态，将深度附件转换成`VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`。
 
-对于颜色附件，我们需要指定最终布局为`VK_IMAGE_LAYOUT_PRESENT_SRC_KHR`格式，该格式是一种用于渲染完成后的呈现操作的适合的格式。而对于深度附件，由于深度缓冲区在呈现操作时不会被用到，我们可以额让深度缓冲区布局格式和渲染子层相同。
+对于颜色附件，我们需要指定最终布局为`VK_IMAGE_LAYOUT_PRESENT_SRC_KHR`格式，该格式是一种用于渲染完成后的呈现操作的适合的格式。而对于深度附件，由于深度缓冲区在呈现操作时不会被用到，我们可以让深度缓冲区布局格式和渲染子层相同。
 
 Subpass
 
