@@ -50,6 +50,15 @@ offset = rowCoord * pitch + colCoord
 
 Vulkan Control Over the Layout
 
+由于上面所解释的那样，GPU会为了提升渲染效率才支持优化的布局方案。优化的布局方案通常是**不透明的**(opaque)，这表示优化布局方案格式的具体细节并不是公开的或者不会让别人知道如何读写图像数据。
+
+举个例子，假如你想让GPU使用一种优化的布局方案来渲染图像，但是如果你希望让CPU读取和理解最终需要渲染的图像的数据，你需要从优化的布局方案改成一般的布局方案。
+
+在Vulkan中，从一种布局转换到另外一种布局叫做**布局转换**(layout transition)。下面三种途径的任何一种，都能够让我们实现布局转换：
+1. 内存栅格化命令(Memory Barrier Command)，通过`vkCmdPipelineBarrier`来控制
+2. 了解渲染层最终布局规范(Render Pass final layout specification)
+3. 了解渲染层子层布局规范(Render Pass subpass layout specification)
+
 
 
 Image Layout Transitions in the Samples
