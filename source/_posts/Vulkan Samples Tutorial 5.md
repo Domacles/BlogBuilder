@@ -81,9 +81,44 @@ Image Layout Transitions in the Samples
 
 ### Create the Render Pass
 
-
+现在你应该知道了如何在某些场景中使用合适的图像布局格式，接下来就可以处理剩下的渲染层。
 
 Attachments
+
+在本样例中，有两个附件(Attachment)，一个是颜色的，另一个是深度缓冲的：
+```
+VkAttachmentDescription attachments[2];
+attachments[0].format = info.format;
+attachments[0].samples = NUM_SAMPLES;
+attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+attachments[0].flags = 0;
+
+attachments[1].format = info.depth.format;
+attachments[1].samples = NUM_SAMPLES;
+attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+attachments[1].flags = 0;
+```
+在两个附件中，`loadOp`成员属性都设置为 **CLEAR** ，说明我们希望缓冲区能够在渲染层实例( render pass instance)开始时被清空。
+
+在颜色附件中，`storeOp`成员属性被设置为 **STORE** ，表示我们希望将渲染结构留在缓冲区中，这样才能够将图像呈献显示设备上。
+
+在深度附件中，`storeOp`成员属性被设置为 **DONT_CARE** ，表示在渲染层实例完成时不再需要缓冲区的内容，即缓冲区内容可清空可扔掉。
+
+对于图像布局格式，我们需要将两个附件的初始格式设置为**未定义布局格式**(undefined layouts)，原因如同上面所说。
+
+渲染子层，即发生在初始化布局和最终布局期间，会将颜色附件转换成`VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`状态，将深度附件转换成`VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`。
+
+对于颜色附件，我们需要指定最终布局为`VK_IMAGE_LAYOUT_PRESENT_SRC_KHR`格式，该格式是一种用于渲染完成后的呈现操作的适合的格式。而对于深度附件，由于深度缓冲区在呈现操作时不会被用到，我们可以额让深度缓冲区布局格式和渲染子层相同。
 
 Subpass
 
