@@ -1,21 +1,21 @@
 ---
 title: Vulkan Samples Tutorial 7
-date: 2017-04-27 3:20:00
+date: 2017-04-27 13:20:00
 tags: Vulkan
 ---
 
 <!-- TOC -->
 
-- [Create a Graphics Pipeline](#Create-a-Graphics-Pipeline)
-    - [Dynamic State](#Dynamic-State)
-    - [Pipeline Vertex Input State](#Pipeline-Vertex-Input-States)
-    - [Pipeline Vertex Input Assembly State](#Pipeline-Vertex-Input-Assembly-State)
-    - [Pipeline Rasterization State](#Pipeline-Rasterization-State)
-    - [Pipeline Color Blend State](#Pipeline-Color-Blend-State)
-    - [Pipeline Viewport State](#Pipeline-Viewport-State)
-    - [Pipeline Depth Stencil State](#Pipeline-Depth-Stencil-State)
-    - [Pipeline Multisample State](#Pipeline-Multisample-State)
-    - [Pulling It All Together - Create Graphics Pipeline](#Pulling-It-All-Together---Create-Graphics-Pipeline)
+- [Create a Graphics Pipeline](#create-a-graphics-pipeline)
+    - [Dynamic State](#dynamic-state)
+    - [Pipeline Vertex Input State](#pipeline-vertex-input-state)
+    - [Pipeline Vertex Input Assembly State](#pipeline-vertex-input-assembly-state)
+    - [Pipeline Rasterization State](#pipeline-rasterization-state)
+    - [Pipeline Color Blend State](#pipeline-color-blend-state)
+    - [Pipeline Viewport State](#pipeline-viewport-state)
+    - [Pipeline Depth Stencil State](#pipeline-depth-stencil-state)
+    - [Pipeline Multisample State](#pipeline-multisample-state)
+    - [Pulling It All Together - Create Graphics Pipeline](#pulling-it-all-together---create-graphics-pipeline)
 
 <!-- /TOC -->
 
