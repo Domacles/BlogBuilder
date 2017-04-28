@@ -27,7 +27,7 @@ tags: Vulkan
 
 图形管线由着色器阶段、管线布局、渲染通道和固定功能的管线阶段。在以前的章节中定义了着色器阶段和管线布局。在此，将设置余下的固定功能的管线阶段。包括填充一些创建管线的"create info"数据结构。在将片段放到片段缓存之前，这里完成的大部分工作是设置预片段操作。简图如下：
 
-![GraphicsPipeline.](Vulkan Samples Tutorial/GraphicsPipeline..png)
+![GraphicsPipeline](Vulkan Samples Tutorial 7/GraphicsPipeline.png)
 
 下一步将设置管线状态对象，即上图中右下角的灰色框。最后一步是连接其它对象指向左上角的紫色管线框，为了完成图形管线的定义。
 
