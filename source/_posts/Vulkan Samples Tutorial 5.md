@@ -81,7 +81,7 @@ Image Layout Transitions in the Samples
 
 ### Create the Render Pass
 
-现在你应该知道了如何在某些场景中使用合适的图像布局格式，接下来就可以处理剩下的渲染通道。
+现在我们应该知道了如何在某些场景中使用合适的图像布局格式，接下来就可以处理剩下的渲染通道。
 
 Attachments
 
@@ -122,7 +122,48 @@ attachments[1].flags = 0;
 
 Subpass
 
+如果需要设置多个子通道，子通道的定义直接而又有趣。假定要实现环境光遮蔽或一些其它的特效，则可能需要对图形数据做一些预处理或后处理，那我们应当关注一下使用多个子通道。在这里，子通道的设定被用于在渲染过程中指定哪些附件有效，和指定渲染时需要用到的布局。
+```
+VkAttachmentReference color_reference = {};
+color_reference.attachment = 0;
+color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+VkAttachmentReference depth_reference = {};
+depth_reference.attachment = 1;
+depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+```
+`attachment`成员属性表示附件数组中对象附件索引，用于渲染渲染通道中。
+```
+VkSubpassDescription subpass = {};
+subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+subpass.flags = 0;
+subpass.inputAttachmentCount = 0;
+subpass.pInputAttachments = NULL;
+subpass.colorAttachmentCount = 1;
+subpass.pColorAttachments = &color_reference;
+subpass.pResolveAttachments = NULL;
+subpass.pDepthStencilAttachment = &depth_reference;
+subpass.preserveAttachmentCount = 0;
+subpass.pPreserveAttachments = NULL;
+```
+`pipelineBindPoint`成员属性表明是一个图形子通道还是一个计算子通道。当前属性值表示，只有图形子通道有效。
+
 Render Pass
+
+现在，我们已经拥有所有渲染通道需要定义的内容，可以创建渲染通道了：
+```
+VkRenderPassCreateInfo rp_info = {};
+rp_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+rp_info.pNext = NULL;
+rp_info.attachmentCount = 2;
+rp_info.pAttachments = attachments;
+rp_info.subpassCount = 1;
+rp_info.pSubpasses = &subpass;
+rp_info.dependencyCount = 0;
+rp_info.pDependencies = NULL;
+res = vkCreateRenderPass(info.device, &rp_info, NULL, &info.render_pass);
+```
+在接下来的样例中，我们将使用渲染通道。
 
 ---
 
