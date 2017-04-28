@@ -82,12 +82,12 @@ info.shaderStages[0].pName = "main";
 
 ![FrameBuffers](Vulkan Samples Tutorial 6/FrameBuffers.png)
 
-看样例代码，我们开始时声明了一个包括两个附件的数组，预初始化第二个附件给深度缓存，这是因为它会被所有的帧缓存使用。随后我们填充第一个附件。注意，"view"对象的作用是引用这个图像，由于view包括需要的附加的元数据（metadata）来描述缓存的格式和用法。
+看样例代码，我们开始时声明了一个包括两个附件的数组，预初始化第二个附件给深度缓存，这是因为它会被所有的帧缓存使用。随后我们填充第一个附件。注意，"view"对象的作用是引用这个图像，由于视图对象(view)包括用来描述缓存的格式和用法的附加元数据(metadata)。
 ```
 VkImageView attachments[2];
 attachments[1] = info.depth.view;
 ```
-接下来，填充创建的info结构:
+接下来，填充create info结构:
 ```
 VkFramebufferCreateInfo fb_info = {};
 fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -112,6 +112,8 @@ for (int i = 0; i < info.swapchainImageCount; i++) {
 }
 ```
 注意，在renderpass样例中，我们定义的相同的渲染通道也与每一个帧缓存相联系。
+
+---
 
 ## Create a Vertex Buffer
 
