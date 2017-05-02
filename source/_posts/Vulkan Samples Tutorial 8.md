@@ -6,19 +6,19 @@ tags: Vulkan
 
 <!-- TOC -->
 
-- [Draw Cube](#Draw-Cube)
-    - [Waiting for a Swapchain Buffer](#Waiting-for-a-Swapchain-Buffer)
-    - [Beginning the Render Pass](#Beginning-the-Render-Pass)
-    - [Bind the Pipeline](#Bind-the-Pipeline)
-    - [Bind the Descriptor Sets](#Bind-the-Descriptor-Sets)
-    - [Bind the Vertex Buffer](#Bind-the-Vertex-Buffer)
-    - [Set the Viewport and Scissors Rectangle](#Set-the-Viewport-and-Scissors-Rectangle)
-    - [Draw the Vertices](#Draw-the-Vertices)
-    - [Transitioning the Swapchain Image for Presenting](#Transitioning-the-Swapchain-Image-for-Presenting)
-    - [Memory barrier approach](#Memory-barrier-approach)
-    - [Submit the Command Buffer](#Submit-the-Command-Buffer)
-    - [Wait for Command Buffer to Complete](#Wait-for-Command-Buffer-to-Complete)
-    - [Present the Swapchain Buffer to Display](#Present-the-Swapchain-Buffer-to-Display)
+- [Draw Cube](#draw-cube)
+    - [Waiting for a Swapchain Buffer](#waiting-for-a-swapchain-buffer)
+    - [Beginning the Render Pass](#beginning-the-render-pass)
+    - [Bind the Pipeline](#bind-the-pipeline)
+    - [Bind the Descriptor Sets](#bind-the-descriptor-sets)
+    - [Bind the Vertex Buffer](#bind-the-vertex-buffer)
+    - [Set the Viewport and Scissors Rectangle](#set-the-viewport-and-scissors-rectangle)
+    - [Draw the Vertices](#draw-the-vertices)
+    - [Transitioning the Swapchain Image for Presenting](#transitioning-the-swapchain-image-for-presenting)
+    - [Memory barrier approach](#memory-barrier-approach)
+    - [Submit the Command Buffer](#submit-the-command-buffer)
+    - [Wait for Command Buffer to Complete](#wait-for-command-buffer-to-complete)
+    - [Present the Swapchain Buffer to Display](#present-the-swapchain-buffer-to-display)
 
 <!-- /TOC -->
 
@@ -123,21 +123,13 @@ vkCmdSetViewport(info.cmd, 0, NUM_VIEWPORTS, &info.viewport);
 
 ### Transitioning the Swapchain Image for Presenting
 
-
-
 ### Memory barrier approach
-
 
 ### Submit the Command Buffer
 
-
 ### Wait for Command Buffer to Complete
 
-
-
 ### Present the Swapchain Buffer to Display
-
-
 
 ---
 
