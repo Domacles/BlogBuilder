@@ -136,9 +136,9 @@ buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 buf_info.flags = 0;
 res = vkCreateBuffer(info.device, &buf_info, NULL, &info.vertex_buffer.buf);
 ```
-创建uniform buffer对象与vertex buffer对象的唯一的真正不同是`usage`参数的设置。
+创建uniform buffer对象与vertex buffer对象实际上唯一不同是`usage`参数的设置。
 
-立方体数据（g_vb_solid_face_colors_Data）由定义了12个三角形的36个顶点构成，立方体的6个面中，每一个面包括2个三角形。每一个三角形都有一个面的颜色。从`cube_data.h`中可以看到真实的数据。
+立方体数据（`g_vb_solid_face_colors_Data`）由定义了12个三角形的36个顶点构成，立方体的6个面中，每一个面包括2个三角形。每一个三角形都有一个面的颜色。从`cube_data.h`中可以看到真实的数据。
 
 ### Allocating the Vertex Buffer Memory
 
@@ -146,7 +146,7 @@ res = vkCreateBuffer(info.device, &buf_info, NULL, &info.vertex_buffer.buf);
 
 ### Store the Vertex Data in the Buffer
 
-一旦vertex buffer的内存分配完，将内存映射，将初始化顶点数据。（不明白说什么……）
+一旦vertex buffer的内存分配完，然后进行内存映射操作、使用顶点数据进行初始化、之后进行解除映射操作(在之前使用uniform buffer时，解释过为何要在使用之后立即解除映射)：
 ```
 uint8_t *pData;
 res = vkMapMemory(info.device, info.vertex_buffer.mem, 0,
@@ -172,7 +172,7 @@ struct Vertex {
     float r, g, b, a;             // Color
 };
 ```
-我们需要创建一个顶点输入的绑定来描述数据管理给GPU。下面设置`vi_binding`和`vi_attribs`成员，但是他们在后面的样例中使用作为创建图形管线的一部分。
+我们需要创建一个顶点输入的绑定来为GPU描述数据的组织形式。虽然是在这里进行`vi_binding`和`vi_attribs`成员的设置，但他们将在后面的样例中作为创建图形管线的一部分。注意看西面顶点数据的格式，这是个很好的参考样例：
 ```
 info.vi_binding.binding = 0;
 info.vi_binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -187,17 +187,17 @@ info.vi_attribs[1].location = 1;
 info.vi_attribs[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
 info.vi_attribs[1].offset = 16;
 ```
-`stride`表示一个顶点的大小，或者需要增加点来得到下一个点的数量。
+`stride`表示一个顶点数据的大小，也可以表示成获取下一个顶点数据需要的字节长度。
 
 `binding`和`location`成员表示他们在GLSL着色器源码中各自的值。可以在shader样例中回顾shader源码。
 
-虽然第一个属性表示位置数据，在`info.vi_attribs[0].format`中，用一个4-byte float颜色格式来描述。由于attribute 1 表示颜色，所以`info.vi_attribs[1].format`可以更清楚地来表示颜色格式。
+尽管我们让`vi_attribs[0]`表示顶点位置数据的信息，但在`info.vi_attribs[0]`中，实际上是`format`属性用4个字节颜色格式(即`VK_FORMAT_R32G32B32A32_SFLOAT`)来为GPU描述数据格式的。那`vi_attribs[1]`很自然地使用来表示颜色数据，所以我们可以看到`info.vi_attribs[1].format`的颜色格式设置。
 
-`offset`成员表示顶点数据中每个属性的指示符。
+`offset`成员表示顶点数据中每个属性的偏移量(在OpenGL中也有这个概念，即第一个顶点数据是从0字节开始的，第一个颜色数据是从16字节开始的，然后根据它们的`format`来计算下一个数据的位置)。
 
 ### Binding the Vertex Buffer to a Render Pass
 
-由于后面样例可以看到，我们可以掠过render pass中的大部分代码。但是现在，找到绑定vertex buffer到render pass的代码。
+由于后面样例可以看到，我们可以掠过render pass中的大部分代码。然后找到绑定vertex buffer到render pass的代码：
 ```
 vkCmdBeginRenderPass(info.cmd, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -208,7 +208,7 @@ vkCmdBindVertexBuffers(info.cmd, 0,             /* Start Binding */
 
 vkCmdEndRenderPass(info.cmd);
 ```
-注意，在渲染通道中，可以只用一个render pass链接vertex buffer；也就是，当记录命令缓冲区时，在`vkCmdBeginRenderPass`和`vkCmdEndRenderPass`之间。当画图时，必须告诉GPU用什么顶点缓存。
+注意，在渲染通道中，只能用一个render pass链接vertex buffer；也就是，当记录命令缓冲区时，在`vkCmdBeginRenderPass`和`vkCmdEndRenderPass`之间的代码进行额。当画图时，必须告诉GPU用什么顶点缓存。
 
 ---
 
