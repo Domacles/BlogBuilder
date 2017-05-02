@@ -26,11 +26,11 @@ tags: Vulkan
 
 本章节代码在`15-draw_cube.cpp`文件中。
 
-这里是我们需要做的最后一步，画Vlukan图像到屏幕上。
+我们已经完成绝大部分工作了，这里是我们需要做的最后一步，将Vlukan图像画到屏幕上。
 
 ### Waiting for a Swapchain Buffer
 
-开始画图之前，样例程序需要渲染一个目标swapchain。用函数`vkAcquireNextImageKHR()`获取swapchain列表的索引，这个函数知道用哪一个framebuffer作为渲染目标。这是可以渲染的下一个图像。
+开始画图之前，样例程序需要渲染一个目标swapchain图像作为底色。用函数`vkAcquireNextImageKHR()`获取swapchain列表的一个索引，这样就能知道用哪一个framebuffer作为渲染目标。这也是下一个可用于渲染的图像。
 ```
 res = vkCreateSemaphore(info.device, &imageAcquiredSemaphoreCreateInfo,
                         NULL, &imageAcquiredSemaphore);
@@ -40,13 +40,13 @@ res = vkAcquireNextImageKHR(info.device, info.swap_chain, UINT64_MAX,
                             imageAcquiredSemaphore, VK_NULL_HANDLE,
                             &info.current_buffer);
 ```
-第一帧，可能不需要使用信号（semaphore），因为swapchain中的所有图像都有效。但是时间证明，在用真实的命令提交给GPU开始之前，图像已准备好，我们将在后面做这些。并且如果改变样例来渲染许多帧，作为一个动画，然后在开始之前，必须去等知道用图像完成硬件。
+第一帧，可能不需要使用信号（semaphore），因为swapchain中的所有图像都可用。在随后要正要提交的GPU命令之前，确保图像可用仍然是好的实现方案。如果图像采样在多帧中都有所改变，比如动画，那就很有必要等待硬件完成图像渲染，以便再次使用该图像的swapchain。
 
-现在，我们仅仅创建信号，并且将它和图像联系起来，以至于用这个信号推迟命令缓存的提交，直到图像准备好。
+注意，本样例不需要等待其他东西的完成。我们仅仅创建信号，并且将它和图像联系起来，以便用这个信号推迟命令缓存的提交，直到图像准备好进行渲染。
 
 ### Beginning the Render Pass
 
-在以前的章节，我们已经定义了渲染通道，所以在命令缓存中，通过设置一个开始渲染通道来开始渲染通道的操作是简单的。
+在以前的章节，我们已经定义了渲染通道，所以在命令缓存中，我们可以直接通过设置一个开启渲染通道的命令来启用渲染通道：
 ```
 VkRenderPassBeginInfo rp_begin;
 rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -61,13 +61,15 @@ rp_begin.clearValueCount = 2;
 rp_begin.pClearValues = clear_values;
 vkCmdBeginRenderPass(info.cmd, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
 ```
-注意，我们已经创建一个命令缓存，并把它放入重新编码模型，通过调用`init_command_buffer()`和`execute_begin_command()`。
+在上面这段代码中:
 
-提供以前定义的渲染通道和从`vkAcquireNextImageKHR()`返回的索引中选择的framebuffer。
+注意，我们已经创建了一个命令缓存，并且，在本样例前面的地方通过调用`init_command_buffer()`和`execute_begin_command()`将命令缓冲区设置成了记录模式(recording mode)。
 
-初始化这些值来设置深灰的背景颜色，并且将深度缓存的值设为“far”(`clear_values`).
+我们提供了之前定义的渲染通道和用`vkAcquireNextImageKHR()`返回的索引选择的framebuffer。
 
-`info.render_pass`中剩下的需要的信息在以前已经设置好，并且然后插入这个命令开始渲染通道到命令缓存。
+clear值来作为初始化值是用来设置背景颜色为深灰色，并且深度缓存的clear值设为深度缓存的“far”(`clear_values`)值。
+
+`info.render_pass`中剩下的需要的信息在以前已经设置好，然后我们只需要直接将它们插入到命令缓存，开始渲染通道。
 
 ### Bind the Pipeline
 
