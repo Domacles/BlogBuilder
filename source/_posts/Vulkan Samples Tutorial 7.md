@@ -23,9 +23,9 @@ tags: Vulkan
 
 本章节代码在`14-init_pipeline.cpp`文件中。
 
-我们将更近地将所有放到一起去画立方体。下一步通过设置图形管线（graphics pipeline）来设置渲染的GPU。
+我们将更进一步把所有之前进行的步骤放到一起去画立方体。接下来，我们通过设置图形管线（graphics pipeline）来设置渲染的GPU。
 
-图形管线由着色器阶段、管线布局、渲染通道和固定功能的管线阶段。在以前的章节中定义了着色器阶段和管线布局。在此，将设置余下的固定功能的管线阶段。包括填充一些创建管线的"create info"数据结构。在将片段放到片段缓存之前，这里完成的大部分工作是设置预片段操作。简图如下：
+图形管线由着色器阶段、管线布局、渲染通道和固定功能的管线阶段。在以前的章节中定义了着色器阶段和管线布局。在此，将设置余下的固定功能的管线阶段。包括填充一些创建管线的"create info"数据结构。在将图像片元(fragments)放到帧缓存之前，这里完成的大部分工作是设置预片段(per-fragment)操作。简图如下：
 
 ![GraphicsPipeline](Vulkan Samples Tutorial 7/GraphicsPipeline.png)
 
@@ -33,10 +33,10 @@ tags: Vulkan
 
 ### Dynamic State
 
-在命令缓冲区运行期间，动态管线状态是一种能被命令缓冲区改变的状态。什么状态是动态的预先通知可能对驱动器有用，因为它设置命令缓存执行的GPU。
+在命令缓冲区运行期间，动态管线状态(Dynamic State)是能被命令缓冲区改变的。预先通知哪些状态是动态状态对驱动器可能有用，因为它可能会为命令缓存的执行创建GPU对象。
 
-样例提供了状态列表，在命令缓存执行中改变状态。在此，代码以设置动态状态列表开始，开始时他们的状态都是disabled。
-```
+样例提供了一个在命令缓存执行期间会改变状态的状态列表。在此，代码以创建动态状态列表开始，开始时这些动状态都是disabled。
+``` 
 VkDynamicState dynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE];
 VkPipelineDynamicStateCreateInfo dynamicState = {};
 memset(dynamicStateEnables, 0, sizeof dynamicStateEnables);
@@ -45,11 +45,11 @@ dynamicState.pNext = NULL;
 dynamicState.pDynamicStates = dynamicStateEnables;
 dynamicState.dynamicStateCount = 0;
 ```
-样例表明用命令缓存动态地改变一些状态，所以，当设置视区（viewport）和剪刀（scissors）矩形时，改变`dynamicStateEnables`数组。代码通过修改`dynamicStateEnables`来保持清楚地设置viewport和scissors。
+样例表明样例将使用命令缓存动态地改变一些状态，所以，当设置视区（viewport）和剪切（scissors）矩形时，样例会改变`dynamicStateEnables`数组。代码通过修改`dynamicStateEnables`来保持清楚地设置viewport和scissors。
 
 ### Pipeline Vertex Input State
 
-当创建vertex buffer时，已经对vertex输入状态进行了初始化，因为它在此时的设置很简单。输入状态包括顶点数据的格式和管理。可以回顾vertexbuffer样例去查看`vi_binding`和`vi_attribs`变量是如何设置的。
+当创建vertex buffer时，我们已经对vertex输入状态进行了初始化，因为它在创建时就直接完成了。输入状态包括顶点数据的格式和管理。可以回顾vertexbuffer样例去查看`vi_binding`和`vi_attribs`变量是如何设置的。
 ```
 VkPipelineVertexInputStateCreateInfo vi;
 vi.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -75,7 +75,7 @@ ia.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 ### Pipeline Rasterization State
 
-在GPU中，下面的数据结构设置了网格化操作。
+在GPU中，下面的数据结构设置了光栅化(rasterization)操作。
 ```
 VkPipelineRasterizationStateCreateInfo rs;
 rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -92,7 +92,7 @@ rs.depthBiasClamp = 0;
 rs.depthBiasSlopeFactor = 0;
 rs.lineWidth = 1.0f;
 ```
-用常见值设置这些字段。我们可以识别`frontFace`成员和GL函数`glFrontFace()`的相互关系。
+用常见值设置这些字段。我们可以通过GL函数`glFrontFace()`的来识别`frontFace`成员。
 
 ### Pipeline Color Blend State
 
@@ -120,19 +120,19 @@ cb.blendConstants[1] = 1.0f;
 cb.blendConstants[2] = 1.0f;
 cb.blendConstants[3] = 1.0f;
 ```
-在每个附件基础上，都提供了一些配置信息的。在管线中，每一个颜色附件需要一个`VkPipelineColorBlendAttachmentState`。既然这样，只有一个颜色附件。
+注意，在每个附件基础(per-attachment basis)上，我们都提供了一些配置信息的。在管线中，每一个颜色附件需要一个`VkPipelineColorBlendAttachmentState`。在这种情况下，这里只有一个颜色附件。
 
-`colorWriteMask`从R, G, B和支持写（writing）的组件（components）。这里，可以选择这4个组件。
+`colorWriteMask`从R, G, B(, A)四个类型中选择出支持写（writing）的组件（components）。这里，可以选择这4个组件。
 
-禁用`blendEnable`意味着与绑定有点的`att_state[0]`中余下的设置没关系。
+我们禁用了`blendEnable`，表示剩下的`att_state[0]`中的设置与绑定(blending)并不是至关紧要的。
 
-我们也可以禁用pixel-writing逻辑操作，因为，当写像素到帧缓存时，这个样例仅仅做了一个简单的替换。
+我们也可以禁用pixel-writing逻辑操作，因为，这个样例仅仅在写像素到帧缓存时做了一个简单的替换。
 
-绑定常量用于一些"blend factors"(如，`VK_BLEND_FACTOR_CONSTANT_COLOR`)，并且仅仅设置合理的内容，同样地在这个样例没有使用。
+绑定常量用于一些"blend factors"(如，`VK_BLEND_FACTOR_CONSTANT_COLOR`)，或仅是用于设置一些东西使其合理，但在这个样例没有使用到。
 
 ### Pipeline Viewport State
 
-draw_cube样例在命令缓存中用命令设置viewport和scissors矩形。这个代码告诉驱动那些viewport和scissors状态是动态的，并且忽略`pViewPorts`和`pScissors`。既然这样，只有一个颜色附件。
+draw_cube样例在命令缓存中用命令设置视口(viewport)和裁剪(scissors)矩形。下面的代码告诉驱动哪些viewport和scissors状态是动态的，并忽略`pViewPorts`和`pScissors`成员。
 ```
 VkPipelineViewportStateCreateInfo vp = {};
 vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -148,7 +148,7 @@ vp.pViewports = NULL;
 
 ### Pipeline Depth Stencil State
 
-继续通过设置深度缓存来初始化后端固定功能。
+紧接着，通过建立共用配置和禁用模版操作(stencil operations)来完成后端固定功能( fixed-function)的初始化：
 ```
 VkPipelineDepthStencilStateCreateInfo ds;
 ds.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -170,7 +170,7 @@ ds.back.depthFailOp = VK_STENCIL_OP_KEEP;
 ds.back.writeMask = 0;
 ds.front = ds.back;
 ```
-因为我们想深度缓存，所以深度缓存writing和testing有效。此外，设置深度缓存操作与`VK_COMPARE_OP_LESS_OR_EQUAL`相比较。最后，disable掉模板（stencil）操作，因为这个样例不需要它。
+因为我们想使用深度缓存，所以开启了深度缓存writing和testing。此外，一般使用`VK_COMPARE_OP_LESS_OR_EQUAL`设置深度缓存比较操作。最后，我们禁用了模板（stencil）操作，由于这个样例并不需要它。
 
 ### Pipeline Multisample State
 
