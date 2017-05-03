@@ -220,15 +220,17 @@ res = vkQueueSubmit(info.queue, 1, submit_info, drawFence);
 
 ### Wait for Command Buffer to Complete
 
-`vkWaitForFences()`用于等待命令缓冲区中命令执行完成。
+`vkWaitForFences()`用于等待命令缓冲区中命令执行完成。当命令会花很长时间才能完成，该函数应当在一个循环中去调用它。但本样例中比较简单，并没有使用这种做法。
 ```
 do {
     res = vkWaitForFences(info.device, 1, &drawFence, VK_TRUE, FENCE_TIMEOUT);
 } while (res == VK_TIMEOUT);
 ```
+此时，我们就知道了交换链图像缓冲区已经做好了显示的准备。
 
 ### Present the Swapchain Buffer to Display
 
+接下来就可以直接将交换链图像显示出来：
 ```
 VkPresentInfoKHR present;
 present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -241,6 +243,9 @@ present.waitSemaphoreCount = 0;
 present.pResults = NULL;
 res = vkQueuePresentKHR(info.queue, &present);
 ```
+现在，我们可以看到显示器出现一个画有立方体的窗口了。
+
+![drawcube](Vulkan Samples Tutorial 8/drawcube.png)
 
 ---
 
